@@ -1,6 +1,6 @@
 if __name__ == '__main__':
 	from superspider import scraper
-	import sys
+	import sys, datetime
 	from jinja2 import Template
 	args = sys.argv[1:]
 	prefix = sys.argv[0].replace(__name__ + ".py","")
@@ -19,4 +19,4 @@ if __name__ == '__main__':
 		for a,b in x:
 			z[a] = b
 		with open("yourdata.html","w") as w:
-			w.write(t.render(content=z,title=myTitle))
+			w.write(t.render(content=z,title=myTitle,time=str(datetime.datetime.now()),url=args[0],Stype="Blog"))
