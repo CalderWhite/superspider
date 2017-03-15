@@ -1,5 +1,5 @@
 if __name__ == '__main__':
-	from super_spider import scraper
+	from superspider import scraper
 	import sys
 	from jinja2 import Template
 	args = sys.argv[1:]
