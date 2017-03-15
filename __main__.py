@@ -19,4 +19,4 @@ if __name__ == '__main__':
 		for a,b in x:
 			z[a] = b
 		with open("yourdata.html","w") as w:
-			w.write(t.render(content=z,title=myTitle).encode("utf-8"))
+			w.write(t.render(content=z,title=myTitle))
