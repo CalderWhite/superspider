@@ -1,16 +1,18 @@
 from setuptools import setup
+##from distutils.core import setup
 import pip, sys
 setup(
   name = 'superspider',
   packages = ['superspider'], # this must be the same as the name above
-  version = '0.1.12',
+  version = '0.1.14',
   description = 'A web scraper that adapts to any web page structure, and design.',
   author = 'Calder White',
   author_email = 'calderwhite1@gmail.com',
   url = 'https://github.com/CalderWhite/superspider', # use the URL to the github repo
   download_url = 'https://github.com/CalderWhite/superspider/archive/master.zip', # I'll explain this in a second
   keywords = [], # arbitrary keywords
-  classifiers = []
+  classifiers = [],
+  include_package_data=True
 )
 if "install" in sys.argv or "build" in sys.argv:
     print("Checking dependancies")

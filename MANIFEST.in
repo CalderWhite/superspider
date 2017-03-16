@@ -1,1 +1,2 @@
+include superspider/template.html
 recursive-include superspider *
