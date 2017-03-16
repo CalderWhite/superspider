@@ -12,7 +12,6 @@ if __name__ == '__main__':
 		myTitle = myTitle[0].upper() + myTitle[1:]
 		x = scraper.scrape(args[0])
 		t = Template(open(prefix + "template.html",'r').read())
-		t = Template(temp)
 		for p in range(len(x)):
 			x[p][0] = ",".join(x[p][0])
 			x[p][1] = x[p][1].text
