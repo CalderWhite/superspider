@@ -4,7 +4,7 @@ import pip, sys
 setup(
   name = 'superspider',
   packages = ['superspider'], # this must be the same as the name above
-  version = '0.2.0',
+  version = '0.2.1',
   description = 'A web scraper that adapts to any web page structure, and design.',
   author = 'Calder White',
   author_email = 'calderwhite1@gmail.com',
