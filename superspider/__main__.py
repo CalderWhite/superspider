@@ -12,11 +12,11 @@ if __name__ == '__main__':
 		myTitle = myTitle[0].upper() + myTitle[1:]
 		x = scraper.scrape(args[0])
 		t = Template(open(prefix + "template.html",'r').read())
-		for p in range(len(x)):
-			x[p][0] = ",".join(x[p][0])
-			x[p][1] = x[p][1].text
+		for p in range(len(x["data"])):
+			x["data"][p][0] = ",".join(x["data"][p][0])
+			x["data"][p][1] = x["data"][p][1]
 		z = {}
-		for a,b in x:
+		for a,b in x["data"]:
 			z[a] = b
 		with open('yourdata.html','w') as w:
-			w.write(t.render(content=z,title=myTitle,time=str(datetime.datetime.now()),url=args[0],Stype="Blog"))
+			w.write(t.render(content=z,title=myTitle,time=str(datetime.datetime.now()),url=args[0],Stype=x["type"]))
