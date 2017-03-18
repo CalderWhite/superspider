@@ -9,34 +9,43 @@ from nltk.corpus import brown
 ### our specific functions for each webpage structure
 #
 #
-def getBlogSections(tree):
+def getBlogSections(tree,silent=False):
 	"""Gets the sections of a blog."""
 	# import here, since not all structures use this feature
 	from nltk import word_tokenize
 	x = ffilter(tree)
 	if len(x) > 1:
-		print("Warning! Found more than one content window!")
+		if not silent:
+			print("Warning! Found more than one content window!")
 	if len(x) == 0:
-		print("Error! No main content window found")
+		if not silent:
+			print("Error! No main content window found")
 	else:
-		print("Attempting to find sections of text...")
+		if not silent:
+			print("Attempting to find sections of text...")
 		sectionList = []
 		for i in x:
 			sectionList.extend(util.getSections(i))
-		print("Stripping json from text found...")
+		if not silent:
+			print("Stripping json from text found...")
 		for i in range(len(sectionList)):
 			try:
 				json.loads(sectionList[i][1].text)
+				if sectionList[i][1].text.strip(string.punctuation) == "":
+					print("DUDE")
+					raise Exception
 			except:
 				pass
 			else:
 				sectionList.pop(i)
-				print("Popped %s" % i)
+				if not silent:
+					print("Popped %s" % i)
 	for i in range(len(sectionList)):
 		sectionList[i] = [[],sectionList[i][1].text]
 	# before doing some filtering of the headers, load in our word index
 	tIndex = util.data.brown_words
-	print("Associating arbitrary headers with paragraphs...")
+	if not silent:
+		print("Associating arbitrary headers with paragraphs...")
 	# add on headers if they are missing.
 	headers = []
 	good_headers = []
@@ -48,7 +57,8 @@ def getBlogSections(tree):
 		try:
 			tx = nltk.pos_tag(tx)
 		except:
-			print("Hit Error using nltk on a header. Skipping")
+			if not silent:
+				print("Hit Error using nltk on a header. Skipping")
 			continue
 		for i in tx:
 			if i[1] == "NNP" and i[0].strip(string.punctuation) != "":
@@ -66,7 +76,7 @@ def printUnscrapable(tree):
 	raise Exception("Web page portrays no signifying features, and is too small to scrape.")
 def getCompanySections(tree):
 	raise Exception("FEATURE NOT IMPLIMENTED.")
-def getMiniSections(tree):
+def getMiniSections(tree,silent=False):
 	"""Attempts to find something that is being described by a small, intricate website."""
 	# import here, since not all structures use this feature
 	from nltk.corpus import stopwords
@@ -120,7 +130,6 @@ class util:
 	class data:
 		content_words = ["main","content","body"]
 		tags = ["<!DOCTYPE>","<a>","<abbr>","<acronym>","<address>","<applet>","<area>","<article>","<aside>","<audio>","<b>","<base>","<basefont>","<bdi>","<bdo>","<big>","<blockquote>","<body>","<br>","<button>","<canvas>","<caption>","<center>","<cite>","<code>","<col>","<colgroup>","<datalist>","<dd>","<del>","<details>","<dfn>","<dialog>","<dir>","<div>","<dl>","<dt>","<em>","<embed>","<fieldset>","<figcaption>","<figure>","<font>","<footer>","<form>","<frame>","<frameset>","<h1>","<h2>","<h3>","<h4>","<h5>","<h6>","<head>","<header>","<hr>","<html>","<i>","<iframe>","<img>","<input>","<ins>","<kbd>","<keygen>","<label>","<legend>","<li>","<link>","<main>","<map>","<mark>","<menu>","<menuitem>","<meta>","<meter>","<nav>","<noframes>","<noscript>","<object>","<ol>","<optgroup>","<option>","<output>","<p>","<param>","<picture>","<pre>","<progress>","<q>","<rp>","<rt>","<ruby>","<s>","<samp>","<script>","<section>","<select>","<small>","<source>","<span>","<strike>","<strong>","<style>","<sub>","<summary>","<sup>","<table>","<tbody>","<td>","<textarea>","<tfoot>","<th>","<thead>","<time>","<title>","<tr>","<track>","<tt>","<u>","<ul>","<var>","<video>","<wbr>"]
-		print("Loading \"brown\" word index...")
 		brown_words = dict(brown.tagged_words())
 	def grabSite(url):
 		"""Returns a website, already parsed by bs4's BeautifulSoup."""
@@ -160,7 +169,7 @@ class util:
 ### Functions that are more specialized to the purpose of this program. Not user friendly
 #
 #
-def rank_tags(tree):
+def rank_tags(tree,silent=False):
 	"""Goes through all possible html5 tags, and then spits out a list greatest to least. The tuple is as follows: (tag_name,tag_count)."""
 	tags = []
 	excludes = ["body","head","!DOCTYPE","title","style","span","html"]
@@ -169,7 +178,8 @@ def rank_tags(tree):
 		try:
 			myTags.remove("<" + i + ">")
 		except:
-			print("Intereseting... %s is not in the document." % ("<" + i + ">"))
+			if not silent:
+				print("Intereseting... %s is not in the document." % ("<" + i + ">"))
 	def doStrip(x):return x.strip("<>!")
 	myTags = list(map(doStrip,myTags))
 	for i in myTags:
@@ -198,9 +208,9 @@ def ffilter(tree,structure="high"):
 		good_divs.pop(pop)
 
 	return good_divs
-def getHeaders(tree):
+def getHeaders(tree,silent=False):
 	"""Trys to find the number of headers on the page, out of all the tags that could represent one."""
-	ranking = rank_tags(tree)
+	ranking = rank_tags(tree,silent=silent)
 	headCount = 0
 	headerTCount = None
 	for tag,count in ranking:
@@ -217,14 +227,14 @@ def getHeaders(tree):
 ### The actually algorithmic part of this script.
 #
 #
-def getSiteType(tree):
+def getSiteType(tree,silent=False):
 	"""Where the magic happens. Probably the most "algorithm-like" part of the program."""
 	### constants
 	#
 	#
 	LINK_TO_PARAGRAPH_MAX_QUOTIENT = 4
 	COMPANY_IMAGE_TO_PARACOUNT_MIN_QUOTIENT = 3
-	COMPANY_HEAD_TO_PARA_MIN_QUOTIENT = 2 
+	COMPANY_HEAD_TO_PARA_MIN_QUOTIENT = 2
 	COMPANY_MIN_HEAD = 6
 	MIN_TEXT = 4000
 	MIN_GATEWAY_WINDOWS = 6
@@ -240,7 +250,7 @@ def getSiteType(tree):
 	#
 	imgCount = len(tree.findAll("img"))
 	paraCount = len(tree.findAll("p"))
-	headCount = getHeaders(tree)
+	headCount = getHeaders(tree,silent=silent)
 	if imgCount / paraCount > COMPANY_IMAGE_TO_PARACOUNT_MIN_QUOTIENT or headCount / paraCount >= COMPANY_HEAD_TO_PARA_MIN_QUOTIENT and headCount >= COMPANY_MIN_HEAD:
 		return "company_home"
 	elif len(mainWindow) > 0:
@@ -248,9 +258,9 @@ def getSiteType(tree):
 			return "gateway"
 		else:
 			mainWindow = mainWindow[0]
-			ranking = rank_tags(mainWindow)
+			ranking = rank_tags(mainWindow,silent=silent)
 			rankIndex = dict(ranking)
-			headers = getHeaders(tree)
+			headers = getHeaders(tree,silent=silent)
 			if "p" in rankIndex and headers > 0:
 				if "a" in rankIndex:
 					# The 4 is just a random constant
@@ -260,9 +270,9 @@ def getSiteType(tree):
 						return "gateway"
 	else:
 		# could still be a gateway
-		ranking = rank_tags(tree)
+		ranking = rank_tags(tree,silent=silent)
 		rankIndex = dict(ranking)
-		headers = getHeaders(tree)
+		headers = getHeaders(tree,silent=silent)
 		if "p" in rankIndex and headers > 0:
 			if "a" in rankIndex:
 				# The 4 is just a random constant
@@ -285,18 +295,21 @@ def getSiteType(tree):
 ### User friendly functions.
 #
 #
-def scrape(url):
+def scrape(url,silent=False):
 	"""Really the "main()" function of the program."""
-	print("GETting [%s]..." % url)
+	if not silent:
+		print("GETting [%s]..." % url)
 	# global for debugging
 	global x
 	x = util.grabSite(url)
-	print("filtering tags in html tree...")
-	Stype = getSiteType(x)
+	if not silent:
+		print("filtering tags in html tree...")
+	Stype = getSiteType(x,silent=silent)
 	sectionList = None
 	if Stype in util.structures:
-		print("IDENTIFIED %s" % Stype)
-		good_headers,sectionList = util.structures[Stype](x)
+		if not silent:
+			print("IDENTIFIED %s" % Stype)
+		good_headers,sectionList = util.structures[Stype](x,silent=silent)
 		if sectionList != None:
 			# remove duplicates from headers
 			good_headers = set(good_headers)
@@ -313,4 +326,5 @@ def scrape(url):
 			return output
 	else:
 		##raise Exception("Could not identify website structure type.")
-		print("I AINT GOT NO TYPE")
+		if not silent:
+			print("I AINT GOT NO TYPE")
